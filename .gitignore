@@ -1,6 +1,12 @@
 # grpcio autogeneration output
 chat/grpc/grpcio/proto*.py*
 
+# liam's funny ide settings
+.cursor/
+
+# macOS things
+.DS_Store
+
 # virtualenv folders
 bin/
 lib/
