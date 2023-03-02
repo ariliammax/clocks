@@ -11,8 +11,8 @@ setuptools.setup(
               'system'],
     package_dir={'common': 'clocks/common/',
                  'machine': 'clocks/machine/',
-                 'system': 'clocks/system/'}
+                 'system': 'clocks/system/'},
     install_requires=['flake8',
-                      'pytest']
+                      'pytest'],
     python_requires='>=3.10',
 )
