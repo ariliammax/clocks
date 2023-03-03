@@ -44,15 +44,17 @@ def roll_die(logical_clock_time, message_queue, other_sockets):
 
 
 def accept_clients(message_queue, other_machine_addresses, s: socket):
-    connections = []
     for _ in other_machine_addresses:
         connection, _ = s.accept()
-        connections.append(connection)
+        Thread(target=listen_client,
+               args=(connection, message_queue)).start()
+
+
+def listen_client(connection, message_queue):
     while True:
-        for connection in connections:
-            response = connection.recv(Config.INT_LEN)
-            logical_clock_time = int.from_bytes(response, byteorder='little')
-            message_queue.append(logical_clock_time)
+        response = connection.recv(Config.INT_LEN)
+        logical_clock_time = int.from_bytes(response, byteorder='little')
+        message_queue.append(logical_clock_time)
 
 
 def handler(e, s: socket = None):
