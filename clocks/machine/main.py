@@ -26,7 +26,7 @@ def logical_step(duration_s: float = 0.0,
 
 def roll_die(logical_clock_time, message_queue, other_sockets):
     if len(message_queue) == 0:
-        r = 3  # randint(1, 10)
+        r = randint(1, 10)
         # 8 since 8*8=64 i.e. long
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
         match r:
@@ -38,27 +38,21 @@ def roll_die(logical_clock_time, message_queue, other_sockets):
                 other_sockets[0].sendall(data)
                 other_sockets[1].sendall(data)
             case _:
-                return
+                pass
     else:
-        message = message_queue.pop()
+        print(message_queue.pop())
 
 
-def accept_clients(s: socket, other_machine_addresses):
-    print(s)
+def accept_clients(message_queue, other_machine_addresses, s: socket):
+    connections = []
     for _ in other_machine_addresses:
-        s.settimeout(Config.TIMEOUT)
-        s.accept()
-        s.settimeout(None)
-
-
-def listen_to_clients(s: socket, message_queue):
-    sleep(Config.TIMEOUT)
-    print(s)
+        connection, _ = s.accept()
+        connections.append(connection)
     while True:
-        response = s.recv(1024)  # Config.INT_LEN)
-        logical_clock_time = int.from_bytes(response, Config.INT_LEN, byteorder='little')
-        print(logical_clock_time)
-        message_queue.append(logical_clock_time)
+        for connection in connections:
+            response = connection.recv(Config.INT_LEN)
+            logical_clock_time = int.from_bytes(response, byteorder='little')
+            message_queue.append(logical_clock_time)
 
 
 def handler(e, s: socket = None):
@@ -75,31 +69,31 @@ def start(handler: Callable = handler,
     try:
         s.bind(machine_address)
         s.listen()
+        s.settimeout(None)
         sleep(Config.TIMEOUT)
         message_queue = []
         Thread(target=accept_clients,
-                args=(s, other_machine_addresses)).start()
+               args=(message_queue, other_machine_addresses, s)).start()
+        sleep(Config.TIMEOUT)
         other_sockets = []
         for other_machine_address in other_machine_addresses:
             other_socket = socket(AF_INET, SOCK_STREAM)
             other_socket.connect(other_machine_address)
             other_sockets.append(other_socket)
-        Thread(target=listen_to_clients,
-                args=(s, message_queue)).start()
         r = randint(1, 6)
         logical_clock_time = 0
-        while True:  # logical_clock_time < 1:
+        while True:
             logical_clock_time += (
                 logical_step(duration_s=(1 / r),
-                                logical_clock_time=logical_clock_time,
-                                message_queue=message_queue,
-                                other_sockets=other_sockets)
+                             logical_clock_time=logical_clock_time,
+                             message_queue=message_queue,
+                             other_sockets=other_sockets)
             )
     except Exception as e:
-        handler(e, s)
+        handler(e=e, s=s)
     finally:
-        handler(None, s=s)
-    
+        handler(e=None, s=s)
+
 
 if __name__ == "__main__":
     start()

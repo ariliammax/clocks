@@ -5,7 +5,7 @@
 class Config:
     INT_LEN = 8
     # (HOST, PORT)
-    MACHINES = [('localhost', 11134),
-                ('localhost', 22212),
-                ('localhost', 33323)]
+    MACHINES = [('localhost', 11119),
+                ('localhost', 22229),
+                ('localhost', 33339)]
     TIMEOUT = 1
