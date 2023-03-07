@@ -40,12 +40,13 @@ def logical_step(duration_s: float,
                  log,
                  logical_clock_time,
                  message_queue,
-                 other_sockets):
+                 other_sockets,
+                 random_gen):
     start_t_s = time()
 
     event = ""
     if len(message_queue) == 0:
-        r = randint(1, Config.RANDOM_EVENT)
+        r = random_gen()
         # 8 since 8*8=64 i.e. long
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
         match r:
@@ -139,12 +140,15 @@ def start(handler: Callable = handler,
         handler(e=None, log=log, s=s)
 
 
-def main(handler: Callable = handler,
+def main(duration_s: float = 1,
+         handler: Callable = handler,
          log=sys.__stdout__,
          max_steps: int = None,
          message_queue: MessageQueue = None,
          other_sockets: List = [],
-         duration_s: float = 1):
+         random_gen: Callable = None):
+    if random_gen is None:
+        random_gen = lambda: randint(1, Config.RANDOM_EVENT)
     logical_clock_time = 0
     while max_steps is None or logical_clock_time < max_steps:
         logical_clock_time = (
@@ -152,7 +156,8 @@ def main(handler: Callable = handler,
                          log=log,
                          logical_clock_time=logical_clock_time,
                          message_queue=message_queue,
-                         other_sockets=other_sockets)
+                         other_sockets=other_sockets,
+                         random_gen=random_gen)
         )
 
 
