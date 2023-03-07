@@ -1,1 +1,1 @@
-pip install -e ./
+mkdir logs && pip install -e ./
