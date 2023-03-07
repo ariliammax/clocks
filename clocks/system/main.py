@@ -13,4 +13,7 @@ if __name__ == "__main__":
             kwargs=dict(machine_address=Config.MACHINES[i],
                         other_machine_addresses=(Config.MACHINES[:i] +
                                                  Config.MACHINES[i + 1:])))
+        p.daemon = True
         p.start()
+    while True:
+        pass

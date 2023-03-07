@@ -1,1 +1,1 @@
-mkdir logs && pip install -e ./
+pip install -e ./ && mkdir logs 2> /dev/null
