@@ -74,7 +74,7 @@ def logical_step(duration_s: float,
         logical_clock_time += 1
 
     log.write(f'{event!s} | {time()!s} | '
-              f'{len(message_queue)!s} | {logical_clock_time!s}'
+              f'{len(message_queue)!s} | {logical_clock_time!s}\n'
               .replace(' | ', Config.DELIMITER))
 
     sleep(remaining_s)
