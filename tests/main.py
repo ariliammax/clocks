@@ -4,7 +4,6 @@
 from clocks.common.config import Config
 from clocks.machine.main import MessageQueue
 from clocks.machine.main import main as machine_main
-from clocks.machine.main import logical_step
 from threading import Thread
 
 import pytest
@@ -60,32 +59,64 @@ class DummyLog(object):
 # ONTO THE TESTS
 
 
-@pytest.mark.parametrize('max_steps', [1, 2])
-def test_simple_peer(max_steps):
+class Help:
+    @staticmethod
+    def wrap_random_seq(seq):
+        return lambda: (seq.pop(0) if len(seq) == 0 else None)
+
+    @staticmethod
+    def generate_asserts(per_assert):
+        return [lambda machines, logs: per_assert(machines[i], logs[i])
+                for i in range(3)]
+
+    @staticmethod
+    def assert_internal_t(t):
+        def assert_internal(machine, logs):
+            return logs[t].event == Config.MSG_INTERNAL
+        return assert_internal
+
+    @staticmethod
+    def assert_clock_t_eq(t, t2):
+        def assert_clock(machine, logs):
+            return logs[t].clock_t == t2
+        return assert_clock
+
+    @staticmethod
+    def assert_no_messages(machine, logs):
+        return len(machine.message_queue) == 0
+
+
+@pytest.mark.skip('The big mama test... shouldn\'t parametrize this bad mama')
+def test_machines_logs(max_steps,
+                       durations_s=[0.1, 0.1, 0.1],
+                       random_gens=[lambda: 4,
+                                    lambda: 4,
+                                    lambda: 4],
+                       assertions=[]):
     machines = [DummyMachine() for _ in range(3)]
     logs = [DummyLog() for _ in range(3)]
     machine_threads = \
         [Thread(target=machine_main,
-                kwargs=dict(duration_s=0.1,
+                kwargs=dict(duration_s=durations_s[i],
                             log=logs[i],
                             max_steps=max_steps,
                             message_queue=machine.message_queue,
                             other_sockets=(machines[:i] +
                                            machines[i + 1:],
                                            ),
-                            random_gen=lambda: 4))
+                            random_gen=random_gens[i]))
          for i, machine in enumerate(machines)]
     [thread.start() for thread in machine_threads]
     [thread.join() for thread in machine_threads]
 
-    # make sure that all the first log messages are logical clock time 1.
-    # but check the negation, so that if it fails we can see the stringified
-    # log outputs of the failing ones
-    # we also store the i so that it prints nicely which machine on failure.
-    assert(len({i: str(log) for i, log in enumerate(logs)
-                if len(log) > 0 and
-                log[0].clock_t != 1 or
-                log[0].event != 'internal'}) == 0)
-    assert(len({i: machine.message_queue
-                for i, machine in enumerate(machines)
-                if len(machine.message_queue) > 0}) == 0)
+    for assertion in assertions:
+        assert assertion(machines, logs)
+
+
+@pytest.mark.parametrize('max_steps', [1, 2])
+def test_simple_peer(max_steps):
+    test_machines_logs(
+        max_steps,
+        assertions=(Help.generate_asserts(Help.assert_internal_t(0)) +
+                    Help.generate_asserts(Help.assert_clock_t_eq(0, 1)) +
+                    Help.generate_asserts(Help.assert_no_messages)))

@@ -51,19 +51,19 @@ def logical_step(duration_s: float,
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
         match r:
             case 1:
-                event = "send 0  "
+                event = Config.MSG_SEND_0
                 other_sockets[0].sendall(data)
             case 2:
-                event = "send 1  "
+                event = Config.MSG_SEND_1
                 other_sockets[1].sendall(data)
             case 3:
-                event = "send 0+1"
+                event = Config.MSG_SEND_01
                 other_sockets[0].sendall(data)
                 other_sockets[1].sendall(data)
             case _:
-                event = "internal"
+                event = Config.MSG_INTERNAL
     else:
-        event = "receive "
+        event = Config.MSG_RECV
         logical_clock_time = max(logical_clock_time, message_queue.pop(0))
 
     remaining_s = -(time() - start_t_s)
@@ -148,7 +148,9 @@ def main(duration_s: float = 1,
          other_sockets: List = [],
          random_gen: Callable = None):
     if random_gen is None:
-        random_gen = lambda: randint(1, Config.RANDOM_EVENT)
+        def _impl_random_gen():
+            return randint(1, Config.RANDOM_EVENT)
+        random_gen = _impl_random_gen
     logical_clock_time = 0
     while max_steps is None or logical_clock_time < max_steps:
         logical_clock_time = (
