@@ -47,8 +47,6 @@ def logical_step(duration_s: float,
     event = ""
     if len(message_queue) == 0:
         r = random_gen()
-        if (callable(r)):
-            r = r()
 
         # 8 since 8*8=64 i.e. long
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
