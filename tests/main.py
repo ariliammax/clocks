@@ -34,9 +34,11 @@ class DummyLog(object):
             self.clock_t = int(clock_t)
 
         def __str__(self):
-            return (f'{self.event!s} | {self.time!s} | '
-                    f'{self.length!s} | {self.clock_t!s}'
-                    .replace(' | ', Config.DELIMITER))
+            return Config.DELIMITER.join([
+                f'{self.event!s}',
+                f'{self.time!s}',
+                f'{self.length!s}',
+                f'{self.clock_t!s}'])
 
     def __init__(self, name=''):
         self._name = name
@@ -51,6 +53,9 @@ class DummyLog(object):
     def __str__(self):
         return '\n'.join([str(msg)
                           for msg in self._logs])
+
+    def flush(self):
+        pass
 
     def write(self, msg):
         params = msg.split(Config.DELIMITER)

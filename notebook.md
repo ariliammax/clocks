@@ -57,3 +57,56 @@ Since we will want to deterministically test the "random dice roll" we decided t
 pass in the random generator function into main, which is then called during the dice
 roll. The mock objects pass deterministic functions to generate numbers into the "random"
 argument.
+
+=======
+### 2023.03.07
+
+Planning for the experiments: since there is the "initial" run of experiments,
+and another run with "smaller" variation in logical clock rates and "smaller"
+probability of internal events, we'll use the following configurations
+
+#### "initial run"
+
+For all runs, the probability of internal events `p(i)` will be `7/10`,
+per the specifications. So we'll just list the durations of each machine's
+logical steps:
+
+- A1: `[1/6, 1/6, 1/6]`
+(all same)
+
+- A2: `[1/6, 1, 1]`
+(one faster than two same, high variation)
+
+- A3: `[1/6, 1/6, 1]`
+(one slower than two same, high variation)
+
+- A4: `[1/6, 1/2, 1]`
+(all different, high variation)
+
+- A5: `[1/6, 1/4, 1/2]`
+(all different, mid variation)
+
+#### "variation runs"
+
+Here, we'll also specify the `p(i)`.
+
+
+- B1: `p(i) = 1/4`, `durs = [1/6, 1/6, 1/6]`
+(lower internal, all same)
+
+- B2: `p(i) = 1/4`, `durs = [1/6, 1/5, 1/5]`
+(lower internal, one faster than two same, low variation)
+
+- B3: `p(i) = 1/4`, `durs = [1/6, 1/6, 1/5]`
+(lower internal, one slower than two same, low variation)
+
+- B4: `p(i) = 1/4`, `durs = [1/6, 1/5, 1/4]`
+(lower internal, all different, low variation)
+
+To explain: the A-series gives just a heuristic of varying the variation
+(and a bit about how this variation is found, i.e. the shape of the
+distribution of times).
+
+Then the B-series shrinks the variation and probability of internal events,
+but tests the same shapes of the distribution of times.
+>>>>>>> d98a289c04e8780bfbab72adb861399d0b3b036d

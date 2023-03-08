@@ -78,13 +78,16 @@ def logical_step(duration_s: float,
         remaining_s += duration_s
         logical_clock_time += 1
 
-    log.write(f'{event!s} | {time()!s} | '
-              f'{len(message_queue)!s} | {logical_clock_time!s}\n'
-              .replace(' | ', Config.DELIMITER))
-    print(f'{event!s} | {duration_s!s} | '
-              f'{len(message_queue)!s} | {logical_clock_time!s}\n'
-              .replace(' | ', Config.DELIMITER))
-
+    # print(f'{event!s} | {duration_s!s} | '
+    #           f'{len(message_queue)!s} | {logical_clock_time!s}\n'
+    #           .replace(' | ', Config.DELIMITER))
+    log.flush()
+    log.write(Config.DELIMITER.join([
+        f'{event!s}',
+        f'{time()!s}',
+        f'{len(message_queue)!s}',
+        f'{logical_clock_time!s}\n']))
+    log.flush()
     sleep(remaining_s)
     return logical_clock_time
 
@@ -110,10 +113,12 @@ def handler(e, log, s: socket):
         raise e
 
 
-def start(handler: Callable = handler,
+def start(duration_s: float = None,
+          handler: Callable = handler,
+          log=None,
           machine_address: Tuple = (),
           other_machine_addresses: List[Tuple] = [],
-          log=None):
+          random_event=Config.RANDOM_EVENT):
     if log is None:
         log = open(
             Config.LOGS +
@@ -136,12 +141,13 @@ def start(handler: Callable = handler,
             other_socket = socket(AF_INET, SOCK_STREAM)
             other_socket.connect(other_machine_address)
             other_sockets.append(other_socket)
-        duration_s = 1 / randint(1, Config.RANDOM_CLOCK)
-        main(handler=handler,
+        if duration_s is None:
+            duration_s = 1 / randint(1, Config.RANDOM_CLOCK)
+        main(duration_s=duration_s,
              log=log,
              message_queue=message_queue,
              other_sockets=other_sockets,
-             duration_s=duration_s)
+             random_event=random_event)
     except Exception as e:
         handler(e=e, log=log, s=s)
     finally:
@@ -149,15 +155,15 @@ def start(handler: Callable = handler,
 
 
 def main(duration_s: float = 1,
-         handler: Callable = handler,
          log=sys.__stdout__,
          max_steps: int = None,
          message_queue: MessageQueue = None,
          other_sockets: List = [],
+         random_event=Config.RANDOM_EVENT,
          random_gen: Callable = None):
     if random_gen is None:
         def _impl_random_gen():
-            return randint(1, Config.RANDOM_EVENT)
+            return randint(1, random_event)
         random_gen = _impl_random_gen
     logical_clock_time = 0
     steps_taken = 0

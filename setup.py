@@ -13,6 +13,7 @@ setuptools.setup(
                  'machine': 'clocks/machine/',
                  'system': 'clocks/system/'},
     install_requires=['flake8',
+                      'matplotlib',
                       'pytest'],
     python_requires='>=3.10',
 )
