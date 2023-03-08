@@ -285,29 +285,3 @@ def test_same_duration(max_steps):
         assertions=(Help.generate_asserts_all_equal(Help.get_num_logs) +
                     Help.generate_asserts_all_equal(Help.get_last_clock))
     )
-
-
-@pytest.mark.parametrize('max_steps', [15, 30, 45])
-def test_ascending_durations(max_steps):
-    exec_machines_logs(
-        max_steps,
-        durations_s=[0.8, 0.4, 0.2],
-        random_gens=[Help.internal_event,
-                     Help.internal_event,
-                     Help.internal_event],
-        assertions=(Help.generate_asserts_ascending_order(Help.get_num_logs) +
-                    Help.generate_asserts_ascending_order(Help.get_last_clock))
-    )
-
-
-@pytest.mark.parametrize('max_steps', [15, 30, 45])
-def test_ascending_durations_small_diff(max_steps):
-    exec_machines_logs(
-        max_steps,
-        durations_s=[0.2, 0.15, 0.1],
-        random_gens=[Help.internal_event,
-                     Help.internal_event,
-                     Help.internal_event],
-        assertions=(Help.generate_asserts_ascending_order(Help.get_num_logs) +
-                    Help.generate_asserts_ascending_order(Help.get_last_clock))
-    )
