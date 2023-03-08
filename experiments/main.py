@@ -29,8 +29,6 @@ class ExperimentParameters:
     TIMEOUT = 70
 
 @pytest.mark.parametrize("parameters", ExperimentParameters.PARAMETERS)
-@pytest.mark.skipif(True, reason='Don\'t skip this if you would like '
-                                 'to collect data.')
 def test_experiments(parameters):
     process = Process(target=main, args=parameters[1:])
     process.start()

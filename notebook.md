@@ -16,10 +16,7 @@ likely be irrelevant. If it doesn't make sense in the logs, we'll ignore it.
 
 ##### A second session
 
-Max made Ari stop before he coded the machines to reecive any data.
-Then suddenly all of the pipes broke.
-
-Max **CLOGGED** the _pipes_. ~ Frank Zapppa
+All of the pipes keep breaking on `recv`...
 
 ### 2023.03.03
 
@@ -117,4 +114,20 @@ The experiments also nicely autogenerate graphs; they are very pretty.
 
 In the tests, we found a funny bug: if a default argument is a list, then it
 is bound to all instances... It's an easy fix (just initialize the list
-you want as a non-default), but c'mon python...
+you want as a non-default), but c'mon python.
+
+#### Results
+
+Discussion may be found in the main [`README.md`](README.md)
+
+| Experiment | Figure |
+| ---------- | ------ |
+| A1 | ![experiment A1](figures/A1.png) |
+| A2 | ![experiment A2](figures/A2.png) |
+| A3 | ![experiment A3](figures/A3.png) |
+| A4 | ![experiment A4](figures/A4.png) |
+| A5 | ![experiment A5](figures/A5.png) |
+| B1 | ![experiment B1](figures/B1.png) |
+| B2 | ![experiment B2](figures/B2.png) |
+| B3 | ![experiment B3](figures/B3.png) |
+| B4 | ![experiment B4](figures/B4.png) |

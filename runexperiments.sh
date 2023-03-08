@@ -1,2 +1,3 @@
 pkill -f multiprocessing
-python -m pytest experiments/main.py -s
+sleep 10
+python -m pytest experiments/main.py

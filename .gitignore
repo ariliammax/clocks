@@ -7,9 +7,6 @@ chat/grpc/grpcio/proto*.py*
 # the logs folders
 logs/
 
-# the figures folders
-figures/
-
 # macOS things
 .DS_Store
 
