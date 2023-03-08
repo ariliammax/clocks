@@ -103,8 +103,24 @@ The general design is pretty straightforward:
 - [`clocks.machine.main`](clocks/machine/main.py)
 contains the code executed on each machine.
 
+    - `MessageQueue` is a thread-safe message queue.
+
+    - `logical_step` is the code that runs every logical clock time unit.
+
+    - `start` sets up the socket to listen on for the message queue, by
+    starting a new thread for `accept_clients`, and also calls `main`,
+    which is the looping of `logical_step`. Note that `accept_clients` doesn't
+    actually add to the message queues, it instead starts a thread for each
+    client that runs `listen_client`, which adds to the message queue.
+
 - [`clocks.system.main`](clocks/system/main.py)
 contains the code to start up the three "machines" (as processes).
+
+    - Starts three `multiprocesssing.Process` processes which each call
+    `clocks.system.start`.
+
+- [`clocks.common.config`](clocks/common/config.py)
+contains some random configuration values.
 
 To view the auto-generated, code-level documentation at
 [`localhost:1234`](http://localhost:1234/clocks), run
