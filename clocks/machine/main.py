@@ -7,13 +7,14 @@ from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread, RLock
 from time import sleep, time
 from typing import Callable, List, Tuple
-import math
 
 import sys
 
 
 class MessageQueue(object):
     def __init__(self, queue=[]):
+        if queue is None:
+            queue = []
         self._queue = queue
         self._lock = RLock()
 
@@ -53,7 +54,7 @@ def logical_step(duration_s: float,
 
         # 8 since 8*8=64 i.e. long
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
-        
+
         match r:
             case 1:
                 event = Config.MSG_SEND_0
@@ -78,9 +79,9 @@ def logical_step(duration_s: float,
         remaining_s += duration_s
         logical_clock_time += 1
 
-    # print(f'{event!s} | {duration_s!s} | '
-    #           f'{len(message_queue)!s} | {logical_clock_time!s}\n'
-    #           .replace(' | ', Config.DELIMITER))
+    print(f'{event!s} | {duration_s!s} | '
+          f'{len(message_queue)!s} | {logical_clock_time!s}\n'
+          .replace(' | ', Config.DELIMITER))
     log.flush()
     log.write(Config.DELIMITER.join([
         f'{event!s}',
