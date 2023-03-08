@@ -31,10 +31,10 @@ class ExperimentParameters:
 @pytest.mark.parametrize("column", [3, 2])
 @pytest.mark.parametrize("parameters", ExperimentParameters.PARAMETERS)
 def test_experiments(column, parameters):
-    # Config.DURATIONS = parameters[1]
-    # Config.RANDOM_EVENT = parameters[2]
-    # for i in range(len(Config.MACHINES)):
-    #     Config.MACHINES[i] = (Config.MACHINES[i][0], parameters[3][i])
+    Config.DURATIONS = parameters[1]
+    Config.RANDOM_EVENT = parameters[2]
+    for i in range(len(Config.MACHINES)):
+        Config.MACHINES[i] = (Config.MACHINES[i][0], parameters[3][i])
     process = Process(target=main)
     process.start()
     process.join(timeout=ExperimentParameters.TIMEOUT)

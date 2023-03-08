@@ -9,9 +9,9 @@ class Config:
     INT_LEN = 8
     LOGS = "logs/"
     # (HOST, PORT)
-    MACHINES = [('localhost', 10001),
-                ('localhost', 20001),
-                ('localhost', 30001)]
+    MACHINES = [('localhost', 10000),
+                ('localhost', 20000),
+                ('localhost', 30000)]
     RANDOM_CLOCK = 6
     RANDOM_EVENT = 10
     TIMEOUT = 1
