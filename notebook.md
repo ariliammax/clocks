@@ -11,8 +11,8 @@ Basically the same as in [`wire`](https://github.com/ariliammax/wire).
 We started by making a `logical_step` function, which takes in a `target`
 to run and then times how long it takes. It then sleeps until the next logical
 step is over (i.e., if it goes slightly over the length of one logical step, it
-waits until the second logical step). That's a design decision, which will likely
-be irrelevant. If it doesn't make sense in the logs, we'll ignore it.
+waits until the second logical step). That's a design decision, which will
+likely be irrelevant. If it doesn't make sense in the logs, we'll ignore it.
 
 ##### A second session
 
@@ -43,8 +43,8 @@ is nice.
 Hey! Ari here...
 
 We're working on building the testing suite. To begin we decided that we would
-make a mock Machine object because we don't want to run into "PORT in use" errors
-using real sockets.
+make a mock Machine object because we don't want to run into "PORT in use"
+errors using real sockets.
 
 The dummy Machine writes directly into a message queue instead of through 
 a socket with sendall.
@@ -53,12 +53,11 @@ Using our dummy machine will redirect the logs to standard output, which won't
 show when testing. Therefore, we also created a mock Log object which will have
 a property 'logicalClock' we can use in our asserts.
 
-Since we will want to deterministically test the "random dice roll" we decided to
-pass in the random generator function into main, which is then called during the dice
-roll. The mock objects pass deterministic functions to generate numbers into the "random"
-argument.
+Since we will want to deterministically test the "random dice roll" we decided
+to pass in the random generator function into main, which is then called
+during the dice roll. The mock objects pass deterministic functions to
+generate numbers into the "random" argument.
 
-=======
 ### 2023.03.07
 
 Planning for the experiments: since there is the "initial" run of experiments,
@@ -109,4 +108,13 @@ distribution of times).
 
 Then the B-series shrinks the variation and probability of internal events,
 but tests the same shapes of the distribution of times.
->>>>>>> d98a289c04e8780bfbab72adb861399d0b3b036d
+
+### 2023.03.08
+
+Many tests and experiments have been written.
+
+The experiments also nicely autogenerate graphs; they are very pretty.
+
+In the tests, we found a funny bug: if a default argument is a list, then it
+is bound to all instances... It's an easy fix (just initialize the list
+you want as a non-default), but c'mon python...

@@ -13,10 +13,9 @@ import pytest
 # some "mocks" of the machines/sockets.
 # purely because shutting off sockets is annoying.
 class DummyMachine(object):
-    def __init__(self, name=''):
-        self._name = name
+    def __init__(self, queue):
         self._out = []
-        self.message_queue = MessageQueue()
+        self.message_queue = queue if queue is not None else MessageQueue()
 
     def sendall(self, data: bytes):
         self._out.append(data)
@@ -40,8 +39,7 @@ class DummyLog(object):
                 f'{self.length!s}',
                 f'{self.clock_t!s}'])
 
-    def __init__(self, name=''):
-        self._name = name
+    def __init__(self, logs=[]):
         self._logs = []
 
     def __getitem__(self, key):
@@ -82,16 +80,16 @@ class Help:
                 for i in range(3)]
 
     @staticmethod
-    def generate_assert_all_equal(f):
+    def generate_asserts_all_equal(f):
         return [lambda machines, logs: all(f(m, l) == f(machines[0], logs[0])
                 for m, l in zip(machines, logs))]
 
     @staticmethod
-    def generate_assert_ascending_order(f):
+    def generate_asserts_ascending_order(f):
         return [lambda machines, logs: all(
-            f(m, l) <= f(machines[i+1], logs[i+1])
-            for i, (m, l) in enumerate(zip(machines[:-1], logs[:-1]))
-        )]
+                    f(m, l) <= f(machines[i+1], logs[i+1])
+                    for i, (m, l) in enumerate(zip(machines[:-1], logs[:-1]))
+                )]
 
     @staticmethod
     def get_num_logs(machine, logs):
@@ -162,8 +160,7 @@ class Help:
         return logs[len(logs) - 1].clock_t
 
 
-@pytest.mark.skip()
-def test_machines_logs(max_steps,
+def exec_machines_logs(max_steps,
                        durations_s=[0.1, 0.1, 0.1],
                        message_queues=[MessageQueue(),
                                        MessageQueue(),
@@ -172,7 +169,7 @@ def test_machines_logs(max_steps,
                                     Help.internal_event,
                                     Help.internal_event],
                        assertions=[]):
-    machines = [DummyMachine() for _ in range(3)]
+    machines = [DummyMachine(queue) for queue in message_queues]
     logs = [DummyLog() for _ in range(3)]
     machine_threads = \
         [Thread(target=machine_main,
@@ -190,9 +187,17 @@ def test_machines_logs(max_steps,
         assert assertion(machines, logs)
 
 
+def test_message_queue_unshared():
+    msgQ1 = MessageQueue()
+    msgQ2 = MessageQueue()
+    msgQ1.append(1)
+    msgQ1.append(2)
+    assert (len(msgQ2) == 0)
+
+
 @pytest.mark.parametrize('max_steps', [1, 2])
 def test_simple_peer(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         assertions=(Help.generate_asserts(Help.assert_internal_t(0)) +
                     Help.generate_asserts(Help.assert_clock_t_eq(0, 1)) +
@@ -201,7 +206,7 @@ def test_simple_peer(max_steps):
 
 @pytest.mark.parametrize('max_steps', [1])
 def test_pull_and_update_from_message_queue(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         message_queues=[MessageQueue([15]), MessageQueue(), MessageQueue()],
         assertions=(Help.generate_assert(0, Help.assert_clock_t_eq(0, 16)) +
@@ -210,7 +215,7 @@ def test_pull_and_update_from_message_queue(max_steps):
 
 @pytest.mark.parametrize('max_steps', [2])
 def test_update_logical_clock(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         message_queues=[MessageQueue([15, 2]), MessageQueue(), MessageQueue()],
         assertions=(Help.generate_assert(0, Help.assert_clock_t_eq(1, 17))))
@@ -218,7 +223,7 @@ def test_update_logical_clock(max_steps):
 
 @pytest.mark.parametrize('max_steps', [2])
 def test_message_queue_precedence(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         random_gens=[Help.send_both,
                      Help.internal_event,
@@ -234,7 +239,7 @@ def test_message_queue_precedence(max_steps):
 
 @pytest.mark.parametrize('max_steps', [3])
 def test_send_both(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         durations_s=[0.1, 0.15, 0.15],
         message_queues=[MessageQueue([15]), MessageQueue(), MessageQueue()],
@@ -242,13 +247,13 @@ def test_send_both(max_steps):
                      Help.internal_event,
                      Help.internal_event],
         assertions=(Help.generate_assert(0, Help.assert_send_both_t(1)) +
-                    Help.generate_assert_all_equal(Help.get_last_clock)) +
-                    Help.generate_asserts(Help.assert_no_messages))
+                    Help.generate_asserts_all_equal(Help.get_last_clock) +
+                    Help.generate_asserts(Help.assert_no_messages)))
 
 
 @pytest.mark.parametrize('max_steps', [3])
 def test_send_one(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         durations_s=[0.1, 0.15, 0.15],
         message_queues=[MessageQueue([15]), MessageQueue(), MessageQueue()],
@@ -257,47 +262,41 @@ def test_send_one(max_steps):
                      Help.internal_event],
         assertions=(Help.generate_assert(0, Help.assert_send_one_t(1))))
 
-# @pytest.mark.parametrize('max_steps', [3])
-# def test_send_other(max_steps):
-#     msgQ1 = MessageQueue()
-#     msgQ2 = MessageQueue()
-#     msgQ1.append(1)
-#     msgQ1.append(2)
-#     print(len(msgQ2)) ... why is this 2!?
-#     I think the issue has to do with the fact that
-#     the default val of MessageQueue is []...
-#     test_machines_logs(
-#         max_steps,
-#         durations_s=[0.1, 0.18, 0.15],
-#         message_queues=[MessageQueue([15]), MessageQueue(), MessageQueue()],
-#         random_gens=[Help.rand_seq([Help.send_one, Help.internal_event]),
-#                      Help.internal_event,
-#                      Help.internal_event],
-#         assertions=(Help.generate_assert(0, Help.assert_clock_t_eq(2, 18)) +
-#                     Help.generate_assert(1, Help.assert_clock_t_eq(2, 18)) +
-#                     Help.generate_assert(2, Help.assert_clock_t_eq(2, 3))))
+
+@pytest.mark.parametrize('max_steps', [3])
+def test_send_other(max_steps):
+    exec_machines_logs(
+        max_steps,
+        durations_s=[0.1, 0.18, 0.15],
+        message_queues=[MessageQueue([15]), MessageQueue(), MessageQueue()],
+        random_gens=[Help.rand_seq([Help.send_one, Help.internal_event]),
+                     Help.internal_event,
+                     Help.internal_event],
+        assertions=(Help.generate_assert(0, Help.assert_clock_t_eq(2, 18)) +
+                    Help.generate_assert(1, Help.assert_clock_t_eq(2, 18)) +
+                    Help.generate_assert(2, Help.assert_clock_t_eq(2, 3))))
 
 
 @pytest.mark.parametrize('max_steps', [15, 30, 45])
 def test_same_duration(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         random_gens=[Help.true_random,
                      Help.true_random,
                      Help.true_random],
-        assertions=(Help.generate_assert_all_equal(Help.get_num_logs) +
-                    Help.generate_assert_all_equal(Help.get_last_clock))
+        assertions=(Help.generate_asserts_all_equal(Help.get_num_logs) +
+                    Help.generate_asserts_all_equal(Help.get_last_clock))
     )
 
 
 @pytest.mark.parametrize('max_steps', [15, 30, 45])
 def test_ascending_durations(max_steps):
-    test_machines_logs(
+    exec_machines_logs(
         max_steps,
         durations_s=[0.3, 0.2, 0.1],
         random_gens=[Help.internal_event,
                      Help.internal_event,
                      Help.internal_event],
-        assertions=(Help.generate_assert_ascending_order(Help.get_num_logs) +
-                    Help.generate_assert_ascending_order(Help.get_last_clock))
+        assertions=(Help.generate_asserts_ascending_order(Help.get_num_logs) +
+                    Help.generate_asserts_ascending_order(Help.get_last_clock))
     )

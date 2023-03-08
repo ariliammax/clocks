@@ -5,21 +5,15 @@ from clocks.common.config import Config
 from random import randint
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread, RLock
-from time import sleep, time
 from typing import Callable, List, Tuple
 
 import sys
+import time
 
 
 class MessageQueue(object):
-    def __init__(self, queue=[]):
-        # The bug documented in tests
-        # is fixed if the default queue is set to
-        # None, but then other bugs occur
-        # Like no messages in queue after sendAll...
-        if queue is None:
-            queue = []
-        self._queue = queue
+    def __init__(self, queue=None):
+        self._queue = queue if queue is not None else []
         self._lock = RLock()
 
     def append(self, item):
@@ -48,7 +42,7 @@ def logical_step(duration_s: float,
                  message_queue,
                  other_sockets,
                  random_gen):
-    start_t_s = time()
+    start_t_s = time.time()
 
     event = ""
     if len(message_queue) == 0:
@@ -76,24 +70,21 @@ def logical_step(duration_s: float,
         event = Config.MSG_RECV
         logical_clock_time = max(logical_clock_time, message_queue.pop(0))
 
-    remaining_s = -(time() - start_t_s)
+    remaining_s = -(time.time() - start_t_s)
     while remaining_s < 0:
         # if it is more than a step, make it
         # an integral number of steps
         remaining_s += duration_s
         logical_clock_time += 1
 
-    print(f'{event!s} | {duration_s!s} | '
-          f'{len(message_queue)!s} | {logical_clock_time!s}\n'
-          .replace(' | ', Config.DELIMITER))
     log.flush()
     log.write(Config.DELIMITER.join([
         f'{event!s}',
-        f'{time()!s}',
+        f'{time.time()!s}',
         f'{len(message_queue)!s}',
         f'{logical_clock_time!s}\n']))
     log.flush()
-    sleep(remaining_s)
+    time.sleep(remaining_s)
     return logical_clock_time
 
 
@@ -136,11 +127,11 @@ def start(duration_s: float = None,
         s.bind(machine_address)
         s.listen()
         s.settimeout(None)
-        sleep(Config.TIMEOUT)
+        time.sleep(Config.TIMEOUT)
         message_queue = MessageQueue()
         Thread(target=accept_clients,
                args=(message_queue, other_machine_addresses, s)).start()
-        sleep(Config.TIMEOUT)
+        time.sleep(Config.TIMEOUT)
         other_sockets = []
         for other_machine_address in other_machine_addresses:
             other_socket = socket(AF_INET, SOCK_STREAM)
