@@ -259,6 +259,13 @@ def test_send_one(max_steps):
 
 # @pytest.mark.parametrize('max_steps', [3])
 # def test_send_other(max_steps):
+#     msgQ1 = MessageQueue()
+#     msgQ2 = MessageQueue()
+#     msgQ1.append(1)
+#     msgQ1.append(2)
+#     print(len(msgQ2)) ... why is this 2!?
+#     I think the issue has to do with the fact that
+#     the default val of MessageQueue is []...
 #     test_machines_logs(
 #         max_steps,
 #         durations_s=[0.1, 0.18, 0.15],

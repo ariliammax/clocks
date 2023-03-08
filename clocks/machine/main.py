@@ -13,6 +13,10 @@ import sys
 
 class MessageQueue(object):
     def __init__(self, queue=[]):
+        # The bug documented in tests
+        # is fixed if the default queue is set to
+        # None, but then other bugs occur
+        # Like no messages in queue after sendAll...
         if queue is None:
             queue = []
         self._queue = queue
