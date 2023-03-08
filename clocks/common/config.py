@@ -3,13 +3,15 @@
 
 
 class Config:
-    DELIMITER = " | "
+    DURATIONS = [None, None, None]
+    DELIMITER = ","
+    FIGURES = "figures/"
     INT_LEN = 8
     LOGS = "logs/"
     # (HOST, PORT)
-    MACHINES = [('localhost', 11113),
-                ('localhost', 22221),
-                ('localhost', 33332)]
+    MACHINES = [('localhost', 10001),
+                ('localhost', 20001),
+                ('localhost', 30001)]
     RANDOM_CLOCK = 6
     RANDOM_EVENT = 10
     TIMEOUT = 1

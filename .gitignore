@@ -4,8 +4,11 @@ chat/grpc/grpcio/proto*.py*
 # liam's funny ide settings
 .cursor/
 
-# the logs folder
+# the logs folders
 logs/
+
+# the figures folders
+figures/
 
 # macOS things
 .DS_Store
