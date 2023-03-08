@@ -7,13 +7,14 @@ from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread, RLock
 from time import sleep, time
 from typing import Callable, List, Tuple
+import math
 
 import sys
 
 
 class MessageQueue(object):
-    def __init__(self):
-        self._queue = []
+    def __init__(self, queue=[]):
+        self._queue = queue
         self._lock = RLock()
 
     def append(self, item):
@@ -47,8 +48,12 @@ def logical_step(duration_s: float,
     event = ""
     if len(message_queue) == 0:
         r = random_gen()
+        if (callable(r)):
+            r = r()
+
         # 8 since 8*8=64 i.e. long
         data = logical_clock_time.to_bytes(Config.INT_LEN, byteorder='little')
+        
         match r:
             case 1:
                 event = Config.MSG_SEND_0
@@ -74,6 +79,9 @@ def logical_step(duration_s: float,
         logical_clock_time += 1
 
     log.write(f'{event!s} | {time()!s} | '
+              f'{len(message_queue)!s} | {logical_clock_time!s}\n'
+              .replace(' | ', Config.DELIMITER))
+    print(f'{event!s} | {duration_s!s} | '
               f'{len(message_queue)!s} | {logical_clock_time!s}\n'
               .replace(' | ', Config.DELIMITER))
 
@@ -152,7 +160,8 @@ def main(duration_s: float = 1,
             return randint(1, Config.RANDOM_EVENT)
         random_gen = _impl_random_gen
     logical_clock_time = 0
-    while max_steps is None or logical_clock_time < max_steps:
+    steps_taken = 0
+    while max_steps is None or steps_taken < max_steps:
         logical_clock_time = (
             logical_step(duration_s=duration_s,
                          log=log,
@@ -161,6 +170,7 @@ def main(duration_s: float = 1,
                          other_sockets=other_sockets,
                          random_gen=random_gen)
         )
+        steps_taken += 1
 
 
 if __name__ == "__main__":

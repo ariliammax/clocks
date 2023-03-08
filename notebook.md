@@ -39,3 +39,21 @@ Discussed how we'll test and what-not. Couple of important steps:
 differently than that logic determines (e.g. due to message received "from
 the future"). This makes it functional instead of a global state thing, which
 is nice.
+
+Hey! Ari here...
+
+We're working on building the testing suite. To begin we decided that we would
+make a mock Machine object because we don't want to run into "PORT in use" errors
+using real sockets.
+
+The dummy Machine writes directly into a message queue instead of through 
+a socket with sendall.
+
+Using our dummy machine will redirect the logs to standard output, which won't
+show when testing. Therefore, we also created a mock Log object which will have
+a property 'logicalClock' we can use in our asserts.
+
+Since we will want to deterministically test the "random dice roll" we decided to
+pass in the random generator function into main, which is then called during the dice
+roll. The mock objects pass deterministic functions to generate numbers into the "random"
+argument.
