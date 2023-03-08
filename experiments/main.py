@@ -11,8 +11,8 @@ import pytest
 
 class ExperimentParameters:
     COLUMN_TO_LABEL = {
-        2: "message_queue_length",
-        3: "logical_clock_time",
+        2: "message queue length",
+        3: "logical clock time",
     }
     PARAMETERS = [
         # [NAME, DURATIONS, PORTS, RANDOM_EVENT]
@@ -56,7 +56,10 @@ def test_graphs(parameters):
                 x.append(float(split[1]))
                 y.append(int(split[column]))
             file.close()
+            axes[i].set_xlabel("time")
+            axes[i].set_ylabel(ExperimentParameters.COLUMN_TO_LABEL[columns[i]])
             axes[i].plot(x, y)
     name = parameters[0]
+    pyplot.tight_layout(pad=1.0)
     pyplot.savefig(Config.FIGURES + name + ".png")
     pyplot.close()
